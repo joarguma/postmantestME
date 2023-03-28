@@ -1,0 +1,165 @@
+{
+	"info": {
+		"_postman_id": "48f46612-b5ee-4250-a653-47a81c2ee4d6",
+		"name": "GraphQL_RSA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21777720"
+	},
+	"item": [
+		{
+			"name": "Query",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//COnvert the response to a json\r",
+							"var jsondata1 = pm.response.json();\r",
+							"//assign the schema structure to a variable\r",
+							"\r",
+							"\r",
+							"//Function to check if responses is 200\r",
+							"pm.test(\"Validate succsefully response 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//Validate if the response has all of the defined keys\r",
+							"pm.test(\"Validate all fields are included\", function () {\r",
+							"  \r",
+							"   //console.log(jsondata1.data.episodes.result);\r",
+							"    pm.expect(jsondata1.data.location).to.have.property(\"dimension\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"equal\", function () {\r",
+							"  \r",
+							"    pm.expect(jsondata1.data.characters.info.count).to.eqls(3);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Array\", function () {\r",
+							"  \r",
+							"    for (let i = 0; i < jsondata1.data.episodes.result.length; i++)\r",
+							"    {\r",
+							"       //console.log(jsondata1.data.episodes.result[i]);\r",
+							"        pm.expect(jsondata1.data.episodes.result[i]).to.have.property(\"air_date\");\r",
+							"       // pm.expect(jsondata1.data.episodes.result[i].name).to.have.data(\"Cheers\");\r",
+							"    }\r",
+							"\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "\r\nquery($characterId: Int!, $episodeId: Int!, $locationid: Int!) \r\n{\r\n  \r\n  character(characterId: $characterId)\r\n  {\r\n    name\r\n    gender\r\n    status\r\n    id       \r\n  }   \r\n  \r\n  location(locationId: $locationid)\r\n  {\r\n    name\r\n    dimension\r\n  }\r\n  episode(episodeId: $episodeId)\r\n  {\r\n    name\r\n    air_date\r\n    created\r\n    episode\r\n    id\r\n    \r\n  }\r\n  \r\n  characters(filters:{name:\"Ganguly\"})\r\n  {\r\n    info\r\n    {\r\n      count\r\n      pages\r\n      \r\n    }\r\n    result\r\n    {\r\n      id\r\n      type\r\n      gender\r\n      \r\n    }\r\n  }\r\n  episodes(filters:{episode: \"hulu\"})\r\n  {\r\n    info\r\n    {\r\n      count\r\n      pages      \r\n    }\r\n    \r\n    result\r\n    {\r\n      name\r\n      air_date\r\n      id\r\n    }    \r\n  }    \r\n}",
+						"variables": "{\r\n  \"characterId\" : 1400,\r\n  \"episodeId\" : 8\r\n  \"locationid\": 1\r\n \r\n}"
+					}
+				},
+				"url": {
+					"raw": "https://rahulshettyacademy.com/gq/graphql",
+					"protocol": "https",
+					"host": [
+						"rahulshettyacademy",
+						"com"
+					],
+					"path": [
+						"gq",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Mutations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsondata1 = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Insertar valores en variable\", function()\r",
+							"{\r",
+							"    \r",
+							"    pm.collectionVariables.set(\"clocationid\", jsondata1.data.createLocation.id);\r",
+							"    console.log(pm.collectionVariables.get(\"clocationid\"));\r",
+							"    pm.collectionVariables.set(\"ccaracterid\", jsondata1.data.createCharacter.id);\r",
+							"    console.log(pm.collectionVariables.get(\"ccaracterid\"));\r",
+							"\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation ($locationname: String!, $caractername: String!)\r\n{\r\n  createLocation(location: {name: $locationname,type:\"Latin America\",dimension:\"500\"})\r\n   {\r\n        id\r\n   }\r\n  \r\n  createCharacter(character: {name: $caractername, type: \"Shon Sui\", status: \"Activo\", species: \"Alien\", gender: \"male\", image: \"low definition\", originId: 100, locationId: 100})\r\n    {\r\n        id\r\n    }\r\n\r\n  \r\n}\r\n",
+						"variables": "{\r\n   \"locationname\" : \"Isla Saona\",\r\n   \"caractername\" : \"Triple H\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "https://rahulshettyacademy.com/gq/graphql",
+					"protocol": "https",
+					"host": [
+						"rahulshettyacademy",
+						"com"
+					],
+					"path": [
+						"gq",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "clocationid",
+			"value": "0",
+			"type": "string"
+		},
+		{
+			"key": "ccaracterid",
+			"value": "0",
+			"type": "string"
+		}
+	]
+}

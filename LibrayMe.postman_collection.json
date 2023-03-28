@@ -1,0 +1,345 @@
+{
+	"info": {
+		"_postman_id": "78821208-7c73-4e92-a910-d97f23222af8",
+		"name": "LibrayMe",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21777720"
+	},
+	"item": [
+		{
+			"name": "Add book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Convert response in Json format\r",
+							"var jsondata = pm.response.json();\r",
+							"//Assign value to a environment variable\r",
+							"pm.environment.set(\"bookid\", jsondata.ID);\r",
+							"\r",
+							"function cleanupScript() {\r",
+							"    postman.setNextRequest(\"Delete Book\");\r",
+							"\r",
+							"}\r",
+							"\r",
+							"function validateSucsessMsg() {\r",
+							"    pm.expect(jsondata.Msg).to.eql(\"successfully added\");\r",
+							"\r",
+							"}\r",
+							"\r",
+							"//Function to check if responses is 200\r",
+							"pm.test(\"Validate status code is 200\", function () {\r",
+							"    try {\r",
+							"        pm.response.to.have.status(200);\r",
+							"        validateSucsessMsg();\r",
+							"\r",
+							"    }\r",
+							"    catch (error) {\r",
+							"        if (pm.expect(jsondata.Msg).to.include(\"already Exists!!\")) {\r",
+							"            console.log(\"FUNCIONO2\")\r",
+							"        }\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate succefuly msg response\",function()\r",
+							"{\r",
+							"\t//Validate if the response has a indicate key\r",
+							"    pm.expect(jsondata).to.have.property(\"Msg\");\r",
+							"\t//validate if a key has a equal text\r",
+							"    pm.expect(jsondata.Msg).to.eql(\"successfully added\");\r",
+							"\t//validate if the response has a text indicate\r",
+							"    pm.expect(pm.response.text()).to.include(\"successfully added\")\r",
+							"})\r",
+							"\r",
+							"pm.test(\"Time validation\", function()\r",
+							"{\r",
+							"\t//validate if the collection has content type\r",
+							"    pm.response.to.have.header(\"Content-Type\");\r",
+							"\t//validate if the response has the indicate content type\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json;charset=UTF-8\");\r",
+							"\t//Validate if the API response below 1000 ms\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"//Validate logic of generated ID\r",
+							"pm.test(\"ID logic validation\", function()\r",
+							"{\r",
+							"    var requestbody = JSON.parse(pm.request.body.raw);\r",
+							"    var idgenerated = requestbody.isbn + requestbody.aisle\r",
+							"    pm.expect(idgenerated).to.eql(pm.environment.get(\"bookid\"));\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//\r",
+							"//Get global variable \r",
+							"var prefijo = pm.globals.get(\"CompanyCode\");\r",
+							"//assing a randon INT to a variable\r",
+							"var val = pm.variables.replaceIn('{{$randomInt}}')\r",
+							"//Assing value to a collection variable\r",
+							"pm.collectionVariables.set(\"isbn\",prefijo + val);\r",
+							"//assing a randon INT to a variable\r",
+							"var aisleRandon = pm.variables.replaceIn('{{$randomInt}}');\r",
+							"//Assing value to a collection variable\r",
+							"pm.collectionVariables.set(\"aisle\", aisleRandon);\r",
+							"//assign valude from csv file\r",
+							"pm.collectionVariables.set(\"name\", pm.iterationData.get(\"namecsv\"));\r",
+							"//assign valude from csv file\r",
+							"pm.collectionVariables.set(\"author\", pm.iterationData.get(\"authorcsv\"));\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"name\":\"{{name}}\",\r\n\"isbn\":\"{{isbn}}\",\r\n\"aisle\":\"{{aisle}}\",\r\n\"author\":\"{{author}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/Library/Addbook.php",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"Library",
+						"Addbook.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Book by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//COnvert the response to a json\r",
+							"var jsondata1 = pm.response.json();\r",
+							"//assign the schema structure to a variable\r",
+							"var schema = \r",
+							"{\r",
+							"  \"type\": \"array\",\r",
+							"  \"items\": [\r",
+							"    {\r",
+							"      \"type\": \"object\",\r",
+							"      \"properties\": {\r",
+							"        \"book_name\": {\r",
+							"          \"type\": \"string\"\r",
+							"        },\r",
+							"        \"isbn\": {\r",
+							"          \"type\": \"string\"\r",
+							"        },\r",
+							"        \"aisle\": {\r",
+							"          \"type\": \"string\"\r",
+							"        },\r",
+							"        \"author\": {\r",
+							"          \"type\": \"string\"\r",
+							"        }\r",
+							"      },\r",
+							"      \"required\": [\r",
+							"        \"book_name\",\r",
+							"        \"isbn\",\r",
+							"        \"aisle\",\r",
+							"        \"author\"\r",
+							"      ]\r",
+							"    }\r",
+							"  ]\r",
+							"};\r",
+							"\r",
+							"//Function to check if responses is 200\r",
+							"pm.test(\"Validate succsefully response 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//Validate if the response has all of the defined keys\r",
+							"pm.test(\"Validate all fields are included\", function () {\r",
+							"    pm.expect(jsondata1[0]).to.have.property(\"book_name\");\r",
+							"    pm.expect(jsondata1[0]).to.have.property(\"isbn\");\r",
+							"    pm.expect(jsondata1[0]).to.have.property(\"aisle\");\r",
+							"    pm.expect(jsondata1[0]).to.have.property(\"author\");\r",
+							"});\r",
+							"\r",
+							"//Validate if the api return the correct value in a key\r",
+							"pm.test(\"Validate ISBN is equal\", function () {\r",
+							"    pm.expect(jsondata1[0].isbn).to.eql(pm.collectionVariables.get(\"isbn\"));\r",
+							"});\r",
+							"\r",
+							"//Validate if the api return the correct value in a key\r",
+							"pm.test(\"Validate ISBN is equal\", function () {\r",
+							"    pm.expect(jsondata1[0].aisle).to.eql(pm.collectionVariables.get(\"aisle\"));\r",
+							"});\r",
+							"//Validate if the API response below 1000 ms\r",
+							"pm.test(\"Time validation\", function () {\r",
+							"\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"//validate the json schema\r",
+							"pm.test(\"Validate json schema\", function () {\r",
+							"    pm.response.to.have.jsonSchema(schema);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/Library/GetBook.php?ID={{bookid}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"Library",
+						"GetBook.php"
+					],
+					"query": [
+						{
+							"key": "ID",
+							"value": "{{bookid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Book by Auhot Name",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/Library/GetBook.php?AuthorName=Son G",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"Library",
+						"GetBook.php"
+					],
+					"query": [
+						{
+							"key": "AuthorName",
+							"value": "Son G"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//COnvert the response to a json\r",
+							"var jsondata = pm.response.json();\r",
+							"//Function to check if responses is 200\r",
+							"pm.test(\"Validate succsefully response 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"//Validate successfully message\r",
+							"pm.test(\"Validate succsefully message\", function () {\r",
+							"    pm.expect(jsondata.msg).to.eql(\"book is successfully deleted\");\r",
+							"});\r",
+							"//Validate if the API response below 1000 ms\r",
+							"pm.test(\"Time validation\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n \"ID\":\"{{bookid}}\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/Library/DeleteBook.php",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"Library",
+						"DeleteBook.php"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "isbn",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "aisle",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "name",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "author",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
